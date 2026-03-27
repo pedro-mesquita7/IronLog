@@ -1,0 +1,33 @@
+# Terraform
+infra/terraform.tfvars
+infra/.terraform/
+infra/*.tfstate*
+
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# dbt
+dbt/profiles.yml
+dbt/target/
+dbt/logs/
+
+# IDE / tools
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+
+# Environment
+.env*.local

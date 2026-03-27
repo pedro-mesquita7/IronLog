@@ -1,0 +1,39 @@
+.overlay {
+  position: fixed;
+  bottom: 56px;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #1a1a2e;
+  border-top: 1px solid #0f3460;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 99;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #0f3460;
+  transition: width 1s linear;
+}
+
+.time {
+  position: relative;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e94560;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  position: relative;
+  font-size: 0.75rem;
+  color: #8899aa;
+}

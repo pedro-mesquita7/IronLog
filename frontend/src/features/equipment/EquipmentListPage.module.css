@@ -1,0 +1,55 @@
+.page {
+  padding: 1rem 1rem 5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.addBtn {
+  background: #e94560;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.section {
+  font-size: 0.875rem;
+  color: #8899aa;
+  text-transform: uppercase;
+  margin: 1rem 0 0.5rem;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #16213e;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.weight {
+  color: #8899aa;
+  font-size: 0.875rem;
+}
+
+.empty {
+  color: #8899aa;
+  text-align: center;
+  margin-top: 3rem;
+}

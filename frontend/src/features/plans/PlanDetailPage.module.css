@@ -1,0 +1,95 @@
+.page {
+  padding: 1rem 1rem 5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.split {
+  color: #8899aa;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editBtn, .deleteBtn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.editBtn {
+  background: #0f3460;
+  color: #fff;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid #e94560;
+  color: #e94560;
+}
+
+.day {
+  margin-bottom: 1.5rem;
+}
+
+.day h2 {
+  font-size: 1rem;
+  color: #e94560;
+  margin: 0 0 0.5rem;
+}
+
+.exercise {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #16213e;
+  border-radius: 8px;
+  margin-bottom: 0.375rem;
+}
+
+.order {
+  font-size: 0.75rem;
+  color: #8899aa;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.exInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.exName {
+  font-size: 0.875rem;
+}
+
+.exMeta {
+  font-size: 0.75rem;
+  color: #8899aa;
+}
+
+.backBtn {
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: #8899aa;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}

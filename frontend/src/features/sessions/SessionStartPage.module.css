@@ -1,0 +1,60 @@
+.page {
+  padding: 1rem 1rem 5rem;
+}
+
+.page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.plan {
+  color: #e94560;
+  margin: 0 0 1.5rem;
+  font-weight: 600;
+}
+
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dayBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dayBtn:disabled {
+  opacity: 0.5;
+}
+
+.dayName {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.dayExCount {
+  color: #8899aa;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.starting {
+  color: #e94560;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.empty {
+  color: #8899aa;
+  text-align: center;
+  margin-top: 3rem;
+}

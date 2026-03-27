@@ -1,0 +1,38 @@
+name: dbt
+
+on:
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  dbt-run:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: eu-west-3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r dbt/requirements.txt
+
+      - name: Create dbt profiles.yml
+        run: |
+          cat > dbt/profiles.yml << 'EOF'
+          ironlog:
+            target: dev
+            outputs:
+              dev:
+                type: athena
+                s3_staging_dir: s3://ironlog-data-lake/athena-results/
+                region_name: eu-west-3
+                database: ironlog
+                schema: gold
+                work_group: ironlog
+          EOF
+
+      - run: cd dbt && dbt run --profiles-dir .
+      - run: cd dbt && dbt test --profiles-dir .

@@ -1,0 +1,83 @@
+.page {
+  padding: 1rem 1rem 5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.addBtn {
+  background: #e94560;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  background: #16213e;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.info {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.name {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activeBadge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  background: #e94560;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.split {
+  font-size: 0.75rem;
+  color: #8899aa;
+}
+
+.activateBtn {
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.75rem;
+  background: #0f3460;
+  border: none;
+  border-radius: 6px;
+  color: #8899aa;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.empty {
+  color: #8899aa;
+  text-align: center;
+  margin-top: 3rem;
+}

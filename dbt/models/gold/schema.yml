@@ -1,0 +1,185 @@
+version: 2
+
+models:
+  - name: fact_sets
+    description: "Sets with corrections applied and total_load computed. Partitioned by year/month."
+    columns:
+      - name: set_id
+        description: "Unique set identifier"
+        tests:
+          - not_null
+          - unique
+      - name: session_id
+        description: "FK to fact_sessions"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_sessions')
+              field: session_id
+              severity: warn
+      - name: exercise_id
+        description: "FK to dim_exercises"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_exercises')
+              field: exercise_id
+              severity: warn
+      - name: set_type
+        description: "Type of set (warmup_50, warmup_75, working, backoff)"
+        tests:
+          - not_null
+      - name: weight_kg
+        description: "Weight in kg (corrected if applicable)"
+        tests:
+          - not_null
+      - name: reps
+        description: "Repetitions (corrected if applicable)"
+        tests:
+          - not_null
+      - name: total_load
+        description: "weight_kg * reps"
+        tests:
+          - not_null
+      - name: timestamp
+        description: "When the set was logged"
+        tests:
+          - not_null
+
+  - name: fact_sessions
+    description: "Completed sessions with aggregated metrics. Partitioned by year/month."
+    columns:
+      - name: session_id
+        description: "Unique session identifier"
+        tests:
+          - not_null
+          - unique
+      - name: plan_id
+        description: "FK to dim_plans"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_plans')
+              field: plan_id
+      - name: date
+        description: "Session date (YYYY-MM-DD)"
+        tests:
+          - not_null
+      - name: total_sets
+        description: "Number of sets in the session"
+      - name: session_total_load
+        description: "Sum of total_load across all sets"
+      - name: duration_minutes
+        description: "Session duration in minutes"
+
+  - name: fact_recovery
+    description: "WHOOP recovery data enriched with sleep metrics. Partitioned by year/month."
+    columns:
+      - name: recovery_id
+        description: "WHOOP cycle ID"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Recovery date (YYYY-MM-DD)"
+        tests:
+          - not_null
+      - name: recovery_score
+        description: "Recovery score 0-100"
+      - name: hrv_rmssd
+        description: "Heart rate variability (RMSSD, ms)"
+      - name: resting_heart_rate
+        description: "Resting heart rate (bpm)"
+      - name: spo2
+        description: "Blood oxygen percentage"
+      - name: skin_temp_celsius
+        description: "Skin temperature in Celsius"
+      - name: total_sleep_minutes
+        description: "Total sleep duration in minutes (from stg_sleep)"
+      - name: sleep_efficiency
+        description: "Sleep efficiency 0-1 (from stg_sleep)"
+
+  - name: dim_exercises
+    description: "Active (non-archived) exercise definitions"
+    columns:
+      - name: exercise_id
+        description: "Unique exercise identifier"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Exercise display name"
+        tests:
+          - not_null
+      - name: muscle_group
+        description: "Primary muscle group"
+        tests:
+          - not_null
+
+  - name: dim_equipment
+    description: "Active (non-archived) equipment"
+    columns:
+      - name: equipment_id
+        description: "Unique equipment identifier"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Equipment display name"
+        tests:
+          - not_null
+
+  - name: dim_plans
+    description: "All training plans"
+    columns:
+      - name: plan_id
+        description: "Unique plan identifier"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Plan display name"
+        tests:
+          - not_null
+
+  - name: agg_exercise_progression
+    description: "Weekly exercise progression metrics. Partitioned by year/month."
+    columns:
+      - name: exercise_id
+        description: "FK to dim_exercises"
+        tests:
+          - not_null
+      - name: exercise_name
+        description: "Exercise display name"
+        tests:
+          - not_null
+      - name: week_start
+        description: "Start of the aggregation week"
+        tests:
+          - not_null
+      - name: max_weight_kg
+        description: "Maximum weight used during the week"
+      - name: weekly_total_load
+        description: "Total volume load for the week"
+
+  - name: agg_recovery_performance
+    description: "Recovery-performance correlation joining WHOOP recovery with training sessions. Partitioned by year/month."
+    columns:
+      - name: date
+        description: "Session/recovery date"
+        tests:
+          - not_null
+      - name: recovery_score
+        description: "WHOOP recovery score for the day"
+      - name: hrv_rmssd
+        description: "Heart rate variability (RMSSD, ms)"
+      - name: resting_heart_rate
+        description: "Resting heart rate (bpm)"
+      - name: session_total_load
+        description: "Sum of total_load across all sets in the session"
+      - name: total_sets
+        description: "Number of sets in the session"
+      - name: weight_prs
+        description: "Number of weight PRs in the session"
+      - name: duration_minutes
+        description: "Session duration in minutes"

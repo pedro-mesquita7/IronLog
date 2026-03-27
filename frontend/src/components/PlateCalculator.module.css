@@ -1,0 +1,70 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.modal {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(90vw, 320px);
+  color: #fff;
+}
+
+.modal h3 {
+  margin: 0 0 0.75rem;
+  color: #e94560;
+}
+
+.target {
+  font-size: 0.875rem;
+  color: #8899aa;
+  margin: 0 0 0.75rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: #8899aa;
+  margin: 0 0 0.5rem;
+}
+
+.plates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.plate {
+  background: #0f3460;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.empty {
+  color: #8899aa;
+  font-style: italic;
+}
+
+.remainder {
+  font-size: 0.75rem;
+  color: #e94560;
+}
+
+.close {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.5rem;
+  background: #0f3460;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}

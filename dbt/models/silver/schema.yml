@@ -1,0 +1,284 @@
+version: 2
+
+models:
+  - name: stg_equipment
+    description: "Deduplicated equipment records from CDC stream"
+    columns:
+      - name: equipment_id
+        description: "Unique equipment identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Equipment display name"
+        tests:
+          - not_null
+      - name: equipment_type
+        description: "Type of equipment"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['bar', 'plate', 'machine']
+      - name: weight_kg
+        description: "Weight in kilograms"
+      - name: quantity
+        description: "Number of items (plates only)"
+      - name: settings_schema
+        description: "Machine settings schema (JSON string, machines only)"
+      - name: is_archived
+        description: "Soft delete flag"
+      - name: created_at
+        description: "Creation timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Last update timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_exercises
+    description: "Deduplicated exercise definitions from CDC stream"
+    columns:
+      - name: exercise_id
+        description: "Unique exercise identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Exercise display name"
+        tests:
+          - not_null
+      - name: muscle_group
+        description: "Primary muscle group targeted"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['chest', 'back', 'legs', 'shoulders', 'arms', 'core', 'full_body']
+      - name: default_bar_id
+        description: "FK to equipment for default barbell"
+      - name: has_plate_calculator
+        description: "Whether plate calculator applies"
+      - name: is_unilateral
+        description: "Whether exercise is performed one side at a time"
+      - name: weak_side
+        description: "Weaker side for unilateral exercises (left/right/null)"
+      - name: rest_timer_seconds
+        description: "Default rest timer duration"
+        tests:
+          - accepted_values:
+              values: ['60', '120', '180']
+              quote: false
+      - name: is_archived
+        description: "Soft delete flag"
+      - name: created_at
+        description: "Creation timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_sessions
+    description: "Deduplicated session metadata from CDC stream"
+    columns:
+      - name: session_id
+        description: "Unique session identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: plan_id
+        description: "FK to the training plan used"
+        tests:
+          - not_null
+      - name: plan_day_number
+        description: "Day number within the plan (1-based)"
+        tests:
+          - not_null
+      - name: date
+        description: "Session date (YYYY-MM-DD)"
+        tests:
+          - not_null
+      - name: status
+        description: "Session lifecycle status"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['in_progress', 'completed']
+      - name: started_at
+        description: "Session start timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+      - name: completed_at
+        description: "Session completion timestamp (null if in_progress)"
+      - name: notes
+        description: "Optional session-level notes"
+      - name: created_at
+        description: "Creation timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_sets
+    description: "Deduplicated set records from CDC stream"
+    columns:
+      - name: set_id
+        description: "Unique set identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: session_id
+        description: "FK to parent session"
+        tests:
+          - not_null
+      - name: exercise_id
+        description: "FK to the exercise performed"
+        tests:
+          - not_null
+      - name: original_exercise_id
+        description: "Original exercise ID before swap (null if no swap)"
+      - name: set_type
+        description: "Type of set"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['warmup_50', 'warmup_75', 'working', 'backoff']
+      - name: set_order
+        description: "Order within the session (1-based)"
+        tests:
+          - not_null
+      - name: weight_kg
+        description: "Weight in kilograms"
+        tests:
+          - not_null
+      - name: reps
+        description: "Number of repetitions"
+        tests:
+          - not_null
+      - name: rir
+        description: "Reps in reserve"
+        tests:
+          - not_null
+      - name: is_weight_pr
+        description: "Whether this was a weight personal record"
+      - name: is_e1rm_pr
+        description: "Whether this was an estimated 1RM personal record"
+      - name: estimated_1rm
+        description: "Estimated one-rep max via Epley formula"
+      - name: timestamp
+        description: "When the set was logged (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_plans
+    description: "Deduplicated training plan metadata from CDC stream"
+    columns:
+      - name: plan_id
+        description: "Unique plan identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Plan display name"
+        tests:
+          - not_null
+      - name: split_type
+        description: "Training split type (e.g. Upper/Lower)"
+        tests:
+          - not_null
+      - name: is_active
+        description: "Whether this is the currently active plan"
+      - name: created_at
+        description: "Creation timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_corrections
+    description: "Deduplicated corrections applied to completed session sets"
+    columns:
+      - name: correction_id
+        description: "Unique correction identifier (UUID)"
+        tests:
+          - not_null
+          - unique
+      - name: set_id
+        description: "FK to the set being corrected"
+        tests:
+          - not_null
+      - name: session_id
+        description: "FK to the session containing the set"
+        tests:
+          - not_null
+      - name: field
+        description: "Field being corrected"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['weight_kg', 'reps', 'rir']
+      - name: old_value
+        description: "Original value before correction"
+        tests:
+          - not_null
+      - name: new_value
+        description: "New corrected value"
+        tests:
+          - not_null
+      - name: reason
+        description: "Optional reason for the correction"
+      - name: created_at
+        description: "Correction timestamp (ISO 8601 UTC)"
+        tests:
+          - not_null
+
+  - name: stg_recovery
+    description: "Deduplicated WHOOP recovery data"
+    columns:
+      - name: recovery_id
+        description: "WHOOP cycle ID"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Recovery date (YYYY-MM-DD)"
+        tests:
+          - not_null
+      - name: recovery_score
+        description: "Recovery score 0-100"
+      - name: hrv_rmssd
+        description: "Heart rate variability (RMSSD, ms)"
+      - name: resting_heart_rate
+        description: "Resting heart rate (bpm)"
+      - name: spo2
+        description: "Blood oxygen percentage"
+      - name: skin_temp_celsius
+        description: "Skin temperature in Celsius"
+      - name: created_at
+        description: "WHOOP record creation timestamp"
+        tests:
+          - not_null
+
+  - name: stg_sleep
+    description: "Deduplicated WHOOP sleep data"
+    columns:
+      - name: sleep_id
+        description: "WHOOP sleep ID"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Sleep date (YYYY-MM-DD)"
+        tests:
+          - not_null
+      - name: total_sleep_minutes
+        description: "Total sleep duration in minutes"
+      - name: rem_sleep_minutes
+        description: "REM sleep duration in minutes"
+      - name: deep_sleep_minutes
+        description: "Deep (SWS) sleep duration in minutes"
+      - name: light_sleep_minutes
+        description: "Light sleep duration in minutes"
+      - name: awake_minutes
+        description: "Awake duration in minutes"
+      - name: sleep_efficiency
+        description: "Sleep efficiency 0-1"
+      - name: respiratory_rate
+        description: "Respiratory rate (breaths/min)"
+      - name: created_at
+        description: "WHOOP record creation timestamp"
+        tests:
+          - not_null

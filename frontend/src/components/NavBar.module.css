@@ -1,0 +1,27 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: #16213e;
+  border-top: 1px solid #0f3460;
+  padding: 0.25rem 0;
+  padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.75rem;
+  color: #8899aa;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.tab.active {
+  color: #e94560;
+  font-weight: 600;
+}

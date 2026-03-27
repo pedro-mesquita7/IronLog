@@ -1,0 +1,21 @@
+name: ironlog
+version: '1.0.0'
+config-version: 2
+profile: ironlog
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+models:
+  ironlog:
+    silver:
+      +materialized: table
+      +file_format: parquet
+      +write_compression: snappy
+      +schema: silver
+    gold:
+      +materialized: table
+      +file_format: parquet
+      +write_compression: snappy
+      +schema: gold

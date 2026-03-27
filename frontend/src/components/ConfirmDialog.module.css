@@ -1,0 +1,45 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.dialog {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(90vw, 320px);
+  color: #fff;
+}
+
+.dialog p {
+  margin: 0 0 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cancel, .confirm {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancel {
+  background: #0f3460;
+  color: #fff;
+}
+
+.confirm {
+  background: #e94560;
+  color: #fff;
+}

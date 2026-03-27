@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: awsdatacatalog
+    schema: ironlog
+    description: "CDC events from DynamoDB Streams, stored as JSON Lines in S3"
+    tables:
+      - name: bronze_equipment
+        description: "CDC events for equipment entities (bars, plates, machines)"
+      - name: bronze_exercises
+        description: "CDC events for exercise definitions"
+      - name: bronze_sessions
+        description: "CDC events for session metadata"
+      - name: bronze_sets
+        description: "CDC events for individual sets logged during sessions"
+      - name: bronze_plans
+        description: "CDC events for training plan metadata"
+      - name: bronze_plan_days
+        description: "CDC events for plan day configurations"
+      - name: bronze_corrections
+        description: "CDC events for post-session corrections"
+      - name: bronze_session_exercise_notes
+        description: "CDC events for per-exercise session notes"
+      - name: bronze_recovery
+        description: "WHOOP recovery data synced daily from WHOOP API v1"
+      - name: bronze_sleep
+        description: "WHOOP sleep data synced daily from WHOOP API v1"
