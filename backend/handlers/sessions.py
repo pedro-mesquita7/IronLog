@@ -33,6 +33,8 @@ def handler(event, context):
         return _get_session(event)
     if resource == "/api/sessions/{id}" and method == "PUT":
         return _update_session(event)
+    if resource == "/api/sessions/{id}" and method == "DELETE":
+        return _delete_session(event)
 
     return api_response(405, {"error": "Method not allowed"})
 
@@ -98,8 +100,9 @@ def _start_session(event):
             Key={"PK": f"EX#{exercise_id}", "SK": f"EX#{exercise_id}"}
         ).get("Item", {})
 
-        # Get last working weight from exercise history (GSI1)
-        last_weight = _get_last_working_weight(table, exercise_id)
+        # Get last working set from exercise history (GSI1)
+        last_set = _get_last_working_set(table, exercise_id)
+        last_weight = last_set.get("weight_kg") if last_set else None
 
         warmup = None
         if last_weight is not None and last_weight > 0:
@@ -113,6 +116,21 @@ def _start_session(event):
                     "reps": "3-5",
                 },
             }
+
+        # Smart suggestions based on last set performance
+        suggested_weight_kg = None
+        suggested_reps = None
+        if last_set and last_weight is not None:
+            last_reps = last_set.get("reps", 0)
+            target_reps_str = plan_ex.get("target_reps", "")
+            # Parse max target reps (e.g., "8-10" → 10, "8" → 8)
+            max_target = _parse_max_reps(target_reps_str)
+            if last_reps and max_target and int(last_reps) >= max_target:
+                # Hit target reps → suggest progression (+2.5kg)
+                suggested_weight_kg = float(_snap_weight(float(last_weight) + 2.5))
+            else:
+                suggested_weight_kg = float(last_weight)
+            suggested_reps = str(last_reps) if last_reps else None
 
         exercises.append({
             "exercise_id": exercise_id,
@@ -128,7 +146,10 @@ def _start_session(event):
             "notes": ex_item.get("notes"),
             "warmup": warmup,
             "last_working_weight_kg": float(last_weight) if last_weight is not None else None,
+            "suggested_weight_kg": suggested_weight_kg,
+            "suggested_reps": suggested_reps,
             "machine_settings": ex_item.get("machine_settings"),
+            "replacement_exercise_ids": ex_item.get("replacement_exercise_ids", []),
         })
 
     return api_response(201, {"session_id": session_id, "status": "in_progress", "exercises": exercises})
@@ -144,7 +165,36 @@ def _get_last_working_weight(table, exercise_id):
     )
     for item in resp.get("Items", []):
         if item.get("set_type") in ("working", "backoff"):
+            # Skip sets from deleted sessions
+            session_id = item.get("session_id")
+            if session_id:
+                session_meta = table.get_item(
+                    Key={"PK": f"SESSION#{session_id}", "SK": "META"}
+                ).get("Item")
+                if session_meta and session_meta.get("status") == "deleted":
+                    continue
             return item.get("weight_kg")
+    return None
+
+
+def _get_last_working_set(table, exercise_id):
+    """Query GSI1 for the most recent working/backoff set (weight + reps)."""
+    resp = table.query(
+        IndexName=GSI1_INDEX,
+        KeyConditionExpression=Key("GSI1PK").eq(f"SETS#EX#{exercise_id}"),
+        ScanIndexForward=False,
+        Limit=20,
+    )
+    for item in resp.get("Items", []):
+        if item.get("set_type") in ("working", "backoff"):
+            session_id = item.get("session_id")
+            if session_id:
+                session_meta = table.get_item(
+                    Key={"PK": f"SESSION#{session_id}", "SK": "META"}
+                ).get("Item")
+                if session_meta and session_meta.get("status") == "deleted":
+                    continue
+            return item
     return None
 
 
@@ -152,6 +202,17 @@ def _snap_weight(weight):
     """Snap to nearest 2.5kg increment. Returns Decimal for DynamoDB."""
     snapped = round(float(weight) / 2.5) * 2.5
     return Decimal(str(snapped))
+
+
+def _parse_max_reps(target_reps_str):
+    """Parse max reps from target string like '8-10' → 10, '8' → 8."""
+    if not target_reps_str:
+        return None
+    parts = str(target_reps_str).split("-")
+    try:
+        return int(parts[-1])
+    except (ValueError, IndexError):
+        return None
 
 
 def _get_session(event):
@@ -190,7 +251,9 @@ def _list_sessions(event):
         KeyConditionExpression=Key("GSI1PK").eq("SESSIONS")
         & Key("GSI1SK").between(date_from, date_to + "~"),
     )
-    return api_response(200, {"sessions": resp["Items"]})
+    # Filter out soft-deleted sessions
+    sessions = [s for s in resp["Items"] if s.get("status") != "deleted"]
+    return api_response(200, {"sessions": sessions})
 
 
 def _update_session(event):
@@ -270,3 +333,24 @@ def _list_session_exercise_notes(event):
         & Key("SK").begins_with("EXNOTE#"),
     )
     return api_response(200, {"notes": resp["Items"]})
+
+
+def _delete_session(event):
+    """Soft-delete a session by setting status to 'deleted'."""
+    session_id = event["pathParameters"]["id"]
+    table = get_table()
+
+    meta = table.get_item(Key={"PK": f"SESSION#{session_id}", "SK": "META"}).get("Item")
+    if not meta:
+        return api_response(404, {"error": "Session not found"})
+    if meta["status"] == "deleted":
+        return api_response(200, {"message": "Session already deleted"})
+
+    now = datetime.now(timezone.utc).isoformat()
+    table.update_item(
+        Key={"PK": f"SESSION#{session_id}", "SK": "META"},
+        UpdateExpression="SET #status = :s, deleted_at = :d",
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues={":s": "deleted", ":d": now},
+    )
+    return api_response(200, {"message": "Session deleted"})

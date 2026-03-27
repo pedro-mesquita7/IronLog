@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../shared/api';
-import type { SessionExercise, WorkoutSet, Session, Equipment, Exercise } from '../../shared/types';
+import type { SessionExercise, WorkoutSet, Session, Equipment, Exercise, SessionExerciseNote } from '../../shared/types';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { ExercisePanel } from './ExercisePanel';
@@ -13,28 +13,39 @@ export function SessionPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [exercises, setExercises] = useState<SessionExercise[]>([]);
   const [sets, setSets] = useState<WorkoutSet[]>([]);
-  const [activeIdx, setActiveIdx] = useState(0);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+  const [exerciseNotes, setExerciseNotes] = useState<SessionExerciseNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [showComplete, setShowComplete] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [planDayName, setPlanDayName] = useState<string | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   const loadSession = useCallback(async () => {
     const [sessionRes, eqRes, exRes] = await Promise.all([
-      apiFetch<{ session: Session & { sets?: WorkoutSet[]; exercise_notes?: unknown[] } }>(`/sessions/${id}`),
+      apiFetch<{ session: Session & { sets?: WorkoutSet[]; exercise_notes?: SessionExerciseNote[] } }>(`/sessions/${id}`),
       apiFetch<{ equipment: Equipment[] }>('/equipment'),
       apiFetch<{ exercises: Exercise[] }>('/exercises'),
     ]);
 
     setSession(sessionRes.session);
-    // Sets are nested inside the session object from GET /api/sessions/{id}
     setSets(sessionRes.session.sets || []);
     setEquipment(eqRes.equipment);
     setAllExercises(exRes.exercises);
+    setExerciseNotes(sessionRes.session.exercise_notes || []);
+
+    // Fetch plan name
+    if (sessionRes.session.plan_id) {
+      try {
+        const planRes = await apiFetch<{ plan: { name: string; days?: Array<{ day_number: number; day_name: string }> } }>(`/plans/${sessionRes.session.plan_id}`);
+        const day = planRes.plan.days?.find((d) => d.day_number === sessionRes.session.plan_day_number);
+        setPlanDayName(day?.day_name || planRes.plan.name);
+      } catch { /* ignore */ }
+    }
   }, [id]);
 
   useEffect(() => {
-    // Restore exercises from sessionStorage (saved by SessionStartPage or this component)
     const stored = sessionStorage.getItem(`ironlog_session_${id}`);
     if (stored) {
       try {
@@ -47,22 +58,15 @@ export function SessionPage() {
 
     loadSession()
       .then(() => {
-        // If exercises still empty after load, rebuild from plan
-        setExercises((prev) => {
-          if (prev.length > 0) return prev;
-          // Fallback: no sessionStorage and no exercises in GET response
-          // This happens on page refresh — we need to re-fetch from plan
-          return prev;
-        });
+        setExercises((prev) => prev);
       })
       .finally(() => setLoading(false));
   }, [loadSession, id]);
 
-  // If exercises are empty after loading, rebuild from plan data
+  // Rebuild exercises from plan if empty
   useEffect(() => {
     if (loading || exercises.length > 0 || !session || allExercises.length === 0) return;
 
-    // Rebuild exercise list from plan
     apiFetch<{ plan: { days?: Array<{ day_number: number; exercises: Array<{ exercise_id: string; order: number; target_sets: number; target_reps: string; set_type: string }> }> } }>(`/plans/${session.plan_id}`)
       .then((res) => {
         const day = res.plan.days?.find((d) => d.day_number === session.plan_day_number);
@@ -83,6 +87,8 @@ export function SessionPage() {
             notes: ex?.notes || null,
             warmup: null,
             last_working_weight_kg: null,
+            suggested_weight_kg: null,
+            suggested_reps: null,
             machine_settings: ex?.machine_settings || null,
             replacement_exercise_ids: ex?.replacement_exercise_ids,
           };
@@ -91,12 +97,22 @@ export function SessionPage() {
       });
   }, [loading, exercises.length, session, allExercises]);
 
-  // Store exercise data in sessionStorage so we don't lose it on refresh
+  // Persist exercises to sessionStorage
   useEffect(() => {
     if (exercises.length > 0 && id) {
       sessionStorage.setItem(`ironlog_session_${id}`, JSON.stringify({ exercises }));
     }
   }, [exercises, id]);
+
+  // Auto-expand first unfinished exercise
+  useEffect(() => {
+    if (expandedIdx !== null || exercises.length === 0) return;
+    const idx = exercises.findIndex((ex) => {
+      const exSets = sets.filter((s) => s.exercise_id === ex.exercise_id);
+      return exSets.length < ex.target_sets;
+    });
+    setExpandedIdx(idx >= 0 ? idx : 0);
+  }, [exercises, sets, expandedIdx]);
 
   const handleSetAdded = (newSet: WorkoutSet) => {
     setSets((prev) => [...prev, newSet]);
@@ -112,6 +128,12 @@ export function SessionPage() {
 
   const handleComplete = async () => {
     await apiFetch(`/sessions/${id}/complete`, { method: 'PUT' });
+    sessionStorage.removeItem(`ironlog_session_${id}`);
+    navigate('/sessions', { replace: true });
+  };
+
+  const handleDelete = async () => {
+    await apiFetch(`/sessions/${id}`, { method: 'DELETE' });
     sessionStorage.removeItem(`ironlog_session_${id}`);
     navigate('/sessions', { replace: true });
   };
@@ -137,7 +159,13 @@ export function SessionPage() {
     });
   };
 
-  // Pre-compute sets grouped by exercise_id to avoid O(n*m) filter in render
+  const handleNoteAdded = (note: SessionExerciseNote) => {
+    setExerciseNotes((prev) => {
+      const filtered = prev.filter((n) => !(n.exercise_id === note.exercise_id));
+      return [...filtered, note];
+    });
+  };
+
   const setsByExercise = useMemo(() => {
     const map = new Map<string, WorkoutSet[]>();
     for (const s of sets) {
@@ -152,79 +180,83 @@ export function SessionPage() {
   if (!session) return <p>Session not found</p>;
 
   const isCompleted = session.status === 'completed';
-  const activeExercise = exercises[activeIdx];
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1>{isCompleted ? 'Session' : 'Workout'}</h1>
-        <span className={styles.date}>{session.date}</span>
-      </div>
-
-      {/* Exercise tabs */}
-      <div className={styles.tabs}>
-        {exercises.map((ex, i) => {
-          const exSets = setsByExercise.get(ex.exercise_id) || [];
-          return (
-            <button
-              key={`${ex.exercise_id}-${i}`}
-              onClick={() => setActiveIdx(i)}
-              className={`${styles.tab} ${i === activeIdx ? styles.activeTab : ''}`}
-            >
-              <span className={styles.tabNum}>{ex.order}</span>
-              <span className={styles.tabName}>{ex.name}</span>
-              {exSets.length > 0 && (
-                <span className={styles.tabSets}>{exSets.length}/{ex.target_sets}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Active exercise panel */}
-      {activeExercise && (
-        <ExercisePanel
-          sessionId={id!}
-          exercise={activeExercise}
-          exerciseIndex={activeIdx}
-          sets={setsByExercise.get(activeExercise.exercise_id) || []}
-          equipment={equipment}
-          allExercises={allExercises}
-          isCompleted={isCompleted}
-          onSetAdded={handleSetAdded}
-          onSetUpdated={handleSetUpdated}
-          onSetDeleted={handleSetDeleted}
-          onSwap={(newId) => handleSwapExercise(activeIdx, newId)}
-          originalExerciseId={exercises[activeIdx]?.exercise_id}
-        />
-      )}
-
-      {/* Navigation */}
-      <div className={styles.nav}>
-        <button
-          onClick={() => setActiveIdx(Math.max(0, activeIdx - 1))}
-          disabled={activeIdx === 0}
-          className={styles.navBtn}
-        >Prev</button>
-
-        {!isCompleted && (
-          <button onClick={() => setShowComplete(true)} className={styles.completeBtn}>
-            Complete Session
+        <div>
+          <h1>{planDayName || (isCompleted ? 'Session' : 'Workout')}</h1>
+          <span className={styles.date}>{session.date}</span>
+        </div>
+        {isCompleted && (
+          <button onClick={() => setShowDelete(true)} className={styles.deleteBtn} title="Delete session">
+            &#128465;
           </button>
         )}
-
-        <button
-          onClick={() => setActiveIdx(Math.min(exercises.length - 1, activeIdx + 1))}
-          disabled={activeIdx === exercises.length - 1}
-          className={styles.navBtn}
-        >Next</button>
       </div>
+
+      {/* All exercises in vertical scroll */}
+      {exercises.map((ex, i) => {
+        const exSets = setsByExercise.get(ex.exercise_id) || [];
+        const isExpanded = expandedIdx === i;
+        const exNote = exerciseNotes.find((n) => n.exercise_id === ex.exercise_id);
+
+        return (
+          <div key={`${ex.exercise_id}-${i}`} className={styles.section}>
+            <button
+              className={`${styles.sectionHeader} ${isExpanded ? styles.expanded : ''}`}
+              onClick={() => setExpandedIdx(isExpanded ? null : i)}
+            >
+              <span className={styles.sectionOrder}>{ex.order}</span>
+              <span className={styles.sectionName}>{ex.name}</span>
+              <span className={styles.sectionProgress}>
+                {exSets.length}/{ex.target_sets}
+              </span>
+              <span className={styles.chevron}>{isExpanded ? '\u25B2' : '\u25BC'}</span>
+            </button>
+
+            {isExpanded && (
+              <ExercisePanel
+                sessionId={id!}
+                exercise={ex}
+                exerciseIndex={i}
+                sets={exSets}
+                equipment={equipment}
+                allExercises={allExercises}
+                isCompleted={isCompleted}
+                onSetAdded={handleSetAdded}
+                onSetUpdated={handleSetUpdated}
+                onSetDeleted={handleSetDeleted}
+                onSwap={(newId) => handleSwapExercise(i, newId)}
+                originalExerciseId={exercises[i]?.exercise_id}
+                sessionNote={exNote?.note_text || null}
+                onNoteAdded={handleNoteAdded}
+              />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Complete Session button */}
+      {!isCompleted && (
+        <button onClick={() => setShowComplete(true)} className={styles.completeBtn}>
+          Complete Session
+        </button>
+      )}
 
       {showComplete && (
         <ConfirmDialog
           message="Complete this session? It will become read-only."
           onConfirm={handleComplete}
           onCancel={() => setShowComplete(false)}
+        />
+      )}
+
+      {showDelete && (
+        <ConfirmDialog
+          message="Delete this session? It will be removed from history and won't count toward PRs."
+          onConfirm={handleDelete}
+          onCancel={() => setShowDelete(false)}
         />
       )}
     </div>
