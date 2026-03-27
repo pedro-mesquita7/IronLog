@@ -2,7 +2,7 @@ import time
 
 import boto3
 
-from shared.constants import ATHENA_DATABASE, ATHENA_OUTPUT_BUCKET, ATHENA_WORKGROUP
+from shared.constants import ATHENA_DATABASE, ATHENA_WORKGROUP
 
 _client = None
 

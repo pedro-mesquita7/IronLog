@@ -1,0 +1,68 @@
+.page {
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
+}
+
+.page h1 {
+  margin: 0 0 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.group {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.row:not(:last-child) {
+  border-bottom: 0.5px solid var(--border-color);
+}
+
+.row:active {
+  background: var(--bg-elevated);
+}
+
+.rowIcon {
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.rowLabel {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.chevron {
+  color: var(--text-tertiary);
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.logoutBtn:active {
+  background: var(--bg-elevated);
+}

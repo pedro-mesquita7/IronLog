@@ -40,6 +40,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.7'
+      - run: mkdir -p build/layer/python && touch build/layer/python/.placeholder
       - run: cd infra && terraform init -input=false
       - run: cd infra && terraform validate
       - run: cd infra && terraform plan -input=false -var="alert_phone=${{ secrets.ALERT_PHONE }}"

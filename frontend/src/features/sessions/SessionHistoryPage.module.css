@@ -1,10 +1,11 @@
 .page {
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
 }
 
 .page h1 {
   margin: 0 0 1rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .filters {
@@ -17,15 +18,15 @@
 .dateInput {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  background: #16213e;
-  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.875rem;
 }
 
 .sep {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -33,12 +34,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: #16213e;
-  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
   margin-bottom: 0.5rem;
   text-decoration: none;
-  color: #fff;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+
+.item:active {
+  background: var(--bg-elevated);
 }
 
 .date {
@@ -55,22 +61,22 @@
 }
 
 .completed {
-  background: rgba(78, 205, 196, 0.2);
-  color: #4ecdc4;
+  background: rgba(10, 132, 255, 0.2);
+  color: var(--accent-secondary);
 }
 
 .inProgress {
-  background: rgba(233, 69, 96, 0.2);
-  color: #e94560;
+  background: rgba(90, 200, 250, 0.2);
+  color: var(--accent-primary);
 }
 
 .time {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
 }
 
 .empty {
-  color: #8899aa;
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 3rem;
 }

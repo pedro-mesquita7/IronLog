@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 
 import boto3
-from boto3.dynamodb.conditions import Attr, Key
+from boto3.dynamodb.conditions import Key
 
 from shared.auth_middleware import require_auth
 from shared.constants import GSI1_INDEX, TABLE_NAME

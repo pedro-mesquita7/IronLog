@@ -1,14 +1,15 @@
 .page {
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
 }
 
 .page h1 {
   margin: 0 0 0.5rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .plan {
-  color: #e94560;
+  color: var(--accent-primary);
   margin: 0 0 1.5rem;
   font-weight: 600;
 }
@@ -24,12 +25,17 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 1rem;
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 12px;
-  color: #fff;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  color: var(--text-primary);
   cursor: pointer;
   text-align: left;
+  transition: background 0.15s;
+}
+
+.dayBtn:active {
+  background: var(--bg-elevated);
 }
 
 .dayBtn:disabled {
@@ -42,19 +48,19 @@
 }
 
 .dayExCount {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
 .starting {
-  color: #e94560;
+  color: var(--accent-primary);
   font-size: 0.75rem;
   margin-top: 0.25rem;
 }
 
 .empty {
-  color: #8899aa;
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 3rem;
 }

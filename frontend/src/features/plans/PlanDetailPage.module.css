@@ -1,5 +1,5 @@
 .page {
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
 }
 
 .header {
@@ -11,11 +11,12 @@
 
 .header h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .split {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   margin: 0.25rem 0 0;
 }
@@ -27,21 +28,21 @@
 
 .editBtn, .deleteBtn {
   padding: 0.375rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
   font-size: 0.75rem;
   cursor: pointer;
 }
 
 .editBtn {
-  background: #0f3460;
-  color: #fff;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .deleteBtn {
   background: none;
-  border: 1px solid #e94560;
-  color: #e94560;
+  border: 1px solid var(--danger);
+  color: var(--danger);
 }
 
 .day {
@@ -50,7 +51,7 @@
 
 .day h2 {
   font-size: 1rem;
-  color: #e94560;
+  color: var(--accent-primary);
   margin: 0 0 0.5rem;
 }
 
@@ -59,14 +60,14 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: #16213e;
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
   margin-bottom: 0.375rem;
 }
 
 .order {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
   min-width: 1.5rem;
   text-align: center;
 }
@@ -82,14 +83,14 @@
 
 .exMeta {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
 }
 
 .backBtn {
   margin-top: 1rem;
   background: none;
   border: none;
-  color: #8899aa;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.5rem 0;
 }

@@ -4,7 +4,6 @@ import gzip
 import json
 
 import boto3
-import pytest
 
 from handlers.cdc import _classify_record, handler
 
@@ -194,7 +193,7 @@ class TestCdcHandler:
                 )
             ]
         }
-        result = handler(event, None)
+        handler(event, None)
         keys = _list_s3_keys("bronze/plans/")
         records = _read_s3_jsonl(keys[0])
         assert records[0]["name"] == "Updated Plan"

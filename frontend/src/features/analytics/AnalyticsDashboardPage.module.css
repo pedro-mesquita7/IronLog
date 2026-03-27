@@ -1,10 +1,11 @@
 .page {
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
 }
 
 .page h1 {
   margin: 0 0 1rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .section {
@@ -14,7 +15,7 @@
 .section h2 {
   font-size: 1.1rem;
   margin: 0 0 0.75rem;
-  color: #4ecdc4;
+  color: var(--accent-secondary);
 }
 
 .selector {
@@ -26,22 +27,22 @@
 .select {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  background: #16213e;
-  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.875rem;
 }
 
 .chartWrap {
-  background: #16213e;
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
   padding: 0.75rem 0.25rem 0.5rem;
   overflow-x: auto;
 }
 
 .empty {
-  color: #8899aa;
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 3rem;
 }
@@ -51,8 +52,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  background: #16213e;
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
   margin-bottom: 0.375rem;
   font-size: 0.85rem;
 }
@@ -71,17 +72,17 @@
 }
 
 .weightPr {
-  background: rgba(233, 69, 96, 0.2);
-  color: #e94560;
+  background: rgba(90, 200, 250, 0.2);
+  color: var(--accent-primary);
 }
 
 .e1rmPr {
-  background: rgba(78, 205, 196, 0.2);
-  color: #4ecdc4;
+  background: rgba(10, 132, 255, 0.2);
+  color: var(--accent-secondary);
 }
 
 .prDetail {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.75rem;
 }
 
@@ -95,24 +96,24 @@
 .dateInput {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  background: #16213e;
-  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.875rem;
 }
 
 .sep {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
 .exportBtn {
   padding: 0.5rem 1rem;
-  background: #4ecdc4;
-  color: #0a0e27;
+  background: var(--accent-secondary);
+  color: #000;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
