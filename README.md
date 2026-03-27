@@ -75,7 +75,9 @@ Bronze: raw CDC events + WHOOP data (append-only). Silver: deduplicated staging.
 
 Full lineage: [docs/data-lineage.md](docs/data-lineage.md)
 
-![IronLog App](docs/screenshot.png)
+### Session Logging
+
+![IronLog Session Logging](docs/screenshot.png)
 
 ## API Endpoints
 
