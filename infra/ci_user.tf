@@ -32,6 +32,8 @@ resource "aws_iam_policy" "ci" {
           "lambda:GetLayerVersion",
           "lambda:DeleteLayerVersion",
           "lambda:ListLayerVersions",
+          "lambda:ListTags",
+          "lambda:TagResource",
         ]
         Resource = "*"
       },
@@ -84,13 +86,13 @@ resource "aws_iam_policy" "ci" {
       {
         Sid    = "SSM"
         Effect = "Allow"
-        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter", "ssm:ListTagsForResource", "ssm:AddTagsToResource"]
+        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter", "ssm:AddTagsToResource"]
         Resource = "arn:aws:ssm:${data.aws_region.current.name}:${local.account_id}:parameter/ironlog/*"
       },
       {
-        Sid      = "SSMDescribe"
+        Sid      = "SSMGlobal"
         Effect   = "Allow"
-        Action   = ["ssm:DescribeParameters"]
+        Action   = ["ssm:DescribeParameters", "ssm:ListTagsForResource"]
         Resource = "*"
       },
       {
