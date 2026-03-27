@@ -9,11 +9,11 @@
 }
 
 .dialog {
-  background: #16213e;
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
   padding: 1.5rem;
   width: min(90vw, 320px);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .dialog p {
@@ -27,19 +27,19 @@
 
 .cancel, .confirm {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.625rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
 }
 
 .cancel {
-  background: #0f3460;
-  color: #fff;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .confirm {
-  background: #e94560;
-  color: #fff;
+  background: var(--accent-primary);
+  color: #000;
 }

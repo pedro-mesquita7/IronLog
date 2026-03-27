@@ -4,11 +4,16 @@
 [![Deploy](https://github.com/pedro-mesquita7/IronLog/actions/workflows/deploy.yml/badge.svg)](https://github.com/pedro-mesquita7/IronLog/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A mobile-first PWA for tracking gym sessions, integrating WHOOP recovery data, and visualizing training progression. **Intentionally over-engineered** as a data engineering portfolio project to demonstrate cloud-native architecture, ELT pipelines, medallion data lakes, IaC, and CI/CD.
+A mobile-first PWA for tracking gym sessions, integrating WHOOP recovery data, and visualizing training progression. **Intentionally over-engineered** as a data engineering portfolio project to demonstrate cloud-native architecture, ELT pipelines, medallion data lakes, IaC, and CI/CD — all running for under €0.10/month on AWS.
 
 **Live**: [pedro-mesquita7.github.io/IronLog](https://pedro-mesquita7.github.io/IronLog)
 
+![IronLog App](docs/screenshot.png)
+
 ## Architecture
+
+<details>
+<summary>System architecture diagram</summary>
 
 ```mermaid
 graph TB
@@ -25,6 +30,8 @@ graph TB
     ATHENA --> ANALYTICS[Analytics Lambda]
     CW[CloudWatch] -->|Alarms| SNS[SNS → SMS]
 ```
+
+</details>
 
 ## Tech Stack
 

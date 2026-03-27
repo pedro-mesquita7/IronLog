@@ -120,14 +120,14 @@ export function AnalyticsDashboardPage() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={progData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#0f3460" />
-                <XAxis dataKey="week" stroke="#8899aa" fontSize={11} />
-                <YAxis yAxisId="left" stroke="#e94560" fontSize={11} />
-                <YAxis yAxisId="right" orientation="right" stroke="#4ecdc4" fontSize={11} />
-                <Tooltip contentStyle={{ background: '#16213e', border: '1px solid #0f3460', color: '#fff' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#38383a" />
+                <XAxis dataKey="week" stroke="#98989d" fontSize={11} />
+                <YAxis yAxisId="left" stroke="#5ac8fa" fontSize={11} />
+                <YAxis yAxisId="right" orientation="right" stroke="#0a84ff" fontSize={11} />
+                <Tooltip contentStyle={{ background: '#1c1c1e', border: '1px solid #38383a', color: '#fff' }} />
                 <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="maxWeight" name="Max Weight" stroke="#e94560" dot={{ r: 3 }} />
-                <Line yAxisId="right" type="monotone" dataKey="e1rm" name="Est. 1RM" stroke="#4ecdc4" dot={{ r: 3 }} />
+                <Line yAxisId="left" type="monotone" dataKey="maxWeight" name="Max Weight" stroke="#5ac8fa" dot={{ r: 3 }} />
+                <Line yAxisId="right" type="monotone" dataKey="e1rm" name="Est. 1RM" stroke="#0a84ff" dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -143,11 +143,11 @@ export function AnalyticsDashboardPage() {
           ) : (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={progData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#0f3460" />
-                <XAxis dataKey="week" stroke="#8899aa" fontSize={11} />
-                <YAxis stroke="#8899aa" fontSize={11} />
-                <Tooltip contentStyle={{ background: '#16213e', border: '1px solid #0f3460', color: '#fff' }} />
-                <Bar dataKey="volume" name="Total Load" fill="#e94560" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#38383a" />
+                <XAxis dataKey="week" stroke="#98989d" fontSize={11} />
+                <YAxis stroke="#98989d" fontSize={11} />
+                <Tooltip contentStyle={{ background: '#1c1c1e', border: '1px solid #38383a', color: '#fff' }} />
+                <Bar dataKey="volume" name="Total Load" fill="#5ac8fa" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -163,14 +163,14 @@ export function AnalyticsDashboardPage() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <ScatterChart>
-                <CartesianGrid strokeDasharray="3 3" stroke="#0f3460" />
-                <XAxis dataKey="recovery" name="Recovery %" stroke="#8899aa" fontSize={11} type="number" domain={[0, 100]} />
-                <YAxis dataKey="load" name="Training Load" stroke="#8899aa" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#38383a" />
+                <XAxis dataKey="recovery" name="Recovery %" stroke="#98989d" fontSize={11} type="number" domain={[0, 100]} />
+                <YAxis dataKey="load" name="Training Load" stroke="#98989d" fontSize={11} />
                 <Tooltip
-                  contentStyle={{ background: '#16213e', border: '1px solid #0f3460', color: '#fff' }}
+                  contentStyle={{ background: '#1c1c1e', border: '1px solid #38383a', color: '#fff' }}
                   formatter={(val: number, name: string) => [val, name]}
                 />
-                <Scatter data={corrData} fill="#4ecdc4" />
+                <Scatter data={corrData} fill="#0a84ff" />
               </ScatterChart>
             </ResponsiveContainer>
           )}
@@ -207,11 +207,11 @@ export function AnalyticsDashboardPage() {
           ) : (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={freqData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#0f3460" />
-                <XAxis type="number" stroke="#8899aa" fontSize={11} />
-                <YAxis dataKey="group" type="category" stroke="#8899aa" fontSize={11} width={80} />
-                <Tooltip contentStyle={{ background: '#16213e', border: '1px solid #0f3460', color: '#fff' }} />
-                <Bar dataKey="count" name="PRs" fill="#4ecdc4" radius={[0, 4, 4, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#38383a" />
+                <XAxis type="number" stroke="#98989d" fontSize={11} />
+                <YAxis dataKey="group" type="category" stroke="#98989d" fontSize={11} width={80} />
+                <Tooltip contentStyle={{ background: '#1c1c1e', border: '1px solid #38383a', color: '#fff' }} />
+                <Bar dataKey="count" name="PRs" fill="#0a84ff" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

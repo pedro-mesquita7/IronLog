@@ -1,16 +1,15 @@
+import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 import styles from './NavBar.module.css';
 
 const tabs = [
-  { to: '/', label: 'Home' },
-  { to: '/equipment', label: 'Equip' },
-  { to: '/exercises', label: 'Exercises' },
-  { to: '/plans', label: 'Plans' },
-  { to: '/sessions', label: 'History' },
-  { to: '/analytics', label: 'Stats' },
+  { to: '/', label: 'Home', icon: '🏠' },
+  { to: '/sessions', label: 'History', icon: '📋' },
+  { to: '/analytics', label: 'Stats', icon: '📊' },
+  { to: '/more', label: 'More', icon: '⋯' },
 ];
 
-export function NavBar() {
+export const NavBar = memo(function NavBar() {
   return (
     <nav className={styles.nav}>
       {tabs.map((t) => (
@@ -20,9 +19,10 @@ export function NavBar() {
           end={t.to === '/'}
           className={({ isActive }) => `${styles.tab} ${isActive ? styles.active : ''}`}
         >
-          {t.label}
+          <span className={styles.icon}>{t.icon}</span>
+          <span className={styles.label}>{t.label}</span>
         </NavLink>
       ))}
     </nav>
   );
-}
+});

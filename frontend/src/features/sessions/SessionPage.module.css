@@ -1,5 +1,5 @@
 .page {
-  padding: 1rem 1rem 7rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 4rem);
 }
 
 .header {
@@ -15,7 +15,7 @@
 }
 
 .date {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -33,17 +33,18 @@
   flex-direction: column;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  color: #8899aa;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-secondary);
   cursor: pointer;
   min-width: 70px;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .tab.activeTab {
-  border-color: #e94560;
-  color: #fff;
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
 }
 
 .tabNum {
@@ -61,29 +62,32 @@
 
 .tabSets {
   font-size: 0.625rem;
-  color: #e94560;
+  color: var(--accent-primary);
 }
 
 .nav {
   position: fixed;
-  bottom: 56px;
+  bottom: var(--nav-height);
   left: 0;
   right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: #1a1a2e;
-  border-top: 1px solid #0f3460;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  background: rgba(28, 28, 30, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border-color);
   gap: 0.5rem;
 }
 
 .navBtn {
   padding: 0.5rem 1rem;
-  background: #0f3460;
+  background: var(--bg-tertiary);
   border: none;
-  border-radius: 8px;
-  color: #fff;
+  border-radius: 10px;
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.875rem;
 }
@@ -95,10 +99,10 @@
 .completeBtn {
   flex: 1;
   padding: 0.5rem;
-  background: #e94560;
+  background: var(--accent-primary);
   border: none;
-  border-radius: 8px;
-  color: #fff;
+  border-radius: 10px;
+  color: #000;
   font-weight: 600;
   cursor: pointer;
   font-size: 0.875rem;

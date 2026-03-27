@@ -1,11 +1,13 @@
 .overlay {
   position: fixed;
-  bottom: 56px;
+  bottom: var(--nav-height);
   left: 0;
   right: 0;
   height: 36px;
-  background: #1a1a2e;
-  border-top: 1px solid #0f3460;
+  background: rgba(28, 28, 30, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,6 +15,7 @@
   z-index: 99;
   cursor: pointer;
   overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bar {
@@ -20,7 +23,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  background: #0f3460;
+  background: var(--bg-tertiary);
   transition: width 1s linear;
 }
 
@@ -28,12 +31,12 @@
   position: relative;
   font-size: 1rem;
   font-weight: 700;
-  color: #e94560;
+  color: var(--accent-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .label {
   position: relative;
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
 }

@@ -9,27 +9,27 @@
 }
 
 .modal {
-  background: #16213e;
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
   padding: 1.5rem;
   width: min(90vw, 320px);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .modal h3 {
   margin: 0 0 0.75rem;
-  color: #e94560;
+  color: var(--accent-primary);
 }
 
 .target {
   font-size: 0.875rem;
-  color: #8899aa;
+  color: var(--text-secondary);
   margin: 0 0 0.75rem;
 }
 
 .label {
   font-size: 0.875rem;
-  color: #8899aa;
+  color: var(--text-secondary);
   margin: 0 0 0.5rem;
 }
 
@@ -41,30 +41,30 @@
 }
 
 .plate {
-  background: #0f3460;
+  background: var(--bg-tertiary);
   padding: 0.375rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 0.875rem;
 }
 
 .empty {
-  color: #8899aa;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
 .remainder {
   font-size: 0.75rem;
-  color: #e94560;
+  color: var(--accent-primary);
 }
 
 .close {
   margin-top: 0.75rem;
   width: 100%;
   padding: 0.5rem;
-  background: #0f3460;
+  background: var(--bg-tertiary);
   border: none;
-  border-radius: 8px;
-  color: #fff;
+  border-radius: 10px;
+  color: var(--text-primary);
   cursor: pointer;
 }

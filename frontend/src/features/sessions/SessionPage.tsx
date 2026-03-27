@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../shared/api';
 import type { SessionExercise, WorkoutSet, Session, Equipment, Exercise } from '../../shared/types';
@@ -137,6 +137,17 @@ export function SessionPage() {
     });
   };
 
+  // Pre-compute sets grouped by exercise_id to avoid O(n*m) filter in render
+  const setsByExercise = useMemo(() => {
+    const map = new Map<string, WorkoutSet[]>();
+    for (const s of sets) {
+      const arr = map.get(s.exercise_id);
+      if (arr) arr.push(s);
+      else map.set(s.exercise_id, [s]);
+    }
+    return map;
+  }, [sets]);
+
   if (loading) return <LoadingSpinner />;
   if (!session) return <p>Session not found</p>;
 
@@ -153,7 +164,7 @@ export function SessionPage() {
       {/* Exercise tabs */}
       <div className={styles.tabs}>
         {exercises.map((ex, i) => {
-          const exSets = sets.filter((s) => s.exercise_id === ex.exercise_id);
+          const exSets = setsByExercise.get(ex.exercise_id) || [];
           return (
             <button
               key={`${ex.exercise_id}-${i}`}
@@ -176,7 +187,7 @@ export function SessionPage() {
           sessionId={id!}
           exercise={activeExercise}
           exerciseIndex={activeIdx}
-          sets={sets.filter((s) => s.exercise_id === activeExercise.exercise_id)}
+          sets={setsByExercise.get(activeExercise.exercise_id) || []}
           equipment={equipment}
           allExercises={allExercises}
           isCompleted={isCompleted}

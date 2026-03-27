@@ -1,9 +1,10 @@
 .page {
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
 }
 
 .page h1 {
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
   margin: 0 0 1rem;
 }
 
@@ -15,38 +16,38 @@
 
 .form label {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
   text-transform: uppercase;
   margin-top: 0.5rem;
 }
 
 .input {
   padding: 0.625rem 0.75rem;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  background: #16213e;
-  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: var(--accent-primary);
 }
 
 .error {
-  color: #e94560;
+  color: var(--danger);
   font-size: 0.875rem;
   margin: 0;
 }
 
 .saveBtn {
   margin-top: 1rem;
-  padding: 0.75rem;
-  background: #e94560;
-  color: #fff;
+  padding: 0.875rem;
+  background: var(--accent-primary);
+  color: #000;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -57,11 +58,11 @@
 }
 
 .deleteBtn {
-  padding: 0.75rem;
+  padding: 0.875rem;
   background: none;
-  border: 1px solid #e94560;
-  color: #e94560;
-  border-radius: 8px;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 12px;
   cursor: pointer;
 }
 
@@ -69,7 +70,7 @@
   margin-top: 1rem;
   background: none;
   border: none;
-  color: #8899aa;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.5rem 0;
 }

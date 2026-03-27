@@ -6,23 +6,23 @@
   padding: 0.375rem 0;
   font-size: 0.875rem;
   cursor: pointer;
-  border-bottom: 1px solid rgba(15, 52, 96, 0.3);
+  border-bottom: 1px solid rgba(56, 56, 58, 0.3);
 }
 
 .row.prRow {
-  background: rgba(233, 69, 96, 0.1);
-  border-radius: 4px;
+  background: rgba(90, 200, 250, 0.1);
+  border-radius: 6px;
 }
 
 .num {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
   text-align: center;
 }
 
 .type {
   font-size: 0.75rem;
-  color: #8899aa;
+  color: var(--text-secondary);
 }
 
 .weight, .reps, .rir {
@@ -33,7 +33,7 @@
 .delBtn {
   background: none;
   border: none;
-  color: #e94560;
+  color: var(--danger);
   cursor: pointer;
   font-size: 0.875rem;
   padding: 0;
@@ -41,7 +41,7 @@
 
 .prBadge {
   font-size: 0.625rem;
-  color: #e94560;
+  color: var(--accent-primary);
   font-weight: 700;
   text-align: center;
 }
@@ -49,10 +49,10 @@
 .editInput {
   width: 100%;
   padding: 0.25rem;
-  border: 1px solid #e94560;
-  border-radius: 4px;
-  background: #0d1b3e;
-  color: #fff;
+  border: 1px solid var(--accent-primary);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.8125rem;
   text-align: center;
 }
@@ -71,9 +71,9 @@
 }
 
 .saveBtn {
-  color: #4ecdc4;
+  color: var(--accent-secondary);
 }
 
 .cancelBtn {
-  color: #e94560;
+  color: var(--danger);
 }

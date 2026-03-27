@@ -10,12 +10,12 @@
 .title {
   font-size: 2.5rem;
   font-weight: 900;
-  color: #e94560;
+  color: var(--accent-primary);
   margin: 0;
 }
 
 .subtitle {
-  color: #8899aa;
+  color: var(--text-secondary);
   margin: 0.5rem 0 2rem;
 }
 
@@ -28,31 +28,31 @@
 }
 
 .input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  background: #16213e;
-  color: #fff;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: var(--accent-primary);
 }
 
 .error {
-  color: #e94560;
+  color: var(--danger);
   font-size: 0.875rem;
   margin: 0;
 }
 
 .button {
-  padding: 0.75rem;
-  background: #e94560;
-  color: #fff;
+  padding: 0.875rem;
+  background: var(--accent-primary);
+  color: #000;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
