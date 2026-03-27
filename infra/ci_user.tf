@@ -2,6 +2,10 @@ resource "aws_iam_user" "ci" {
   name = "${local.project}-ci"
 }
 
+# Broad permissions for CI/CD — single-user hobby project.
+# Terraform's AWS provider reads tags, code signing, versions etc. on refresh,
+# requiring many implicit permissions. Using service-level wildcards avoids
+# chasing individual actions every time the provider adds a new API call.
 resource "aws_iam_policy" "ci" {
   name = "${local.project}-ci-policy"
 
@@ -9,32 +13,9 @@ resource "aws_iam_policy" "ci" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "Lambda"
-        Effect = "Allow"
-        Action = [
-          "lambda:CreateFunction",
-          "lambda:UpdateFunctionCode",
-          "lambda:UpdateFunctionConfiguration",
-          "lambda:GetFunction",
-          "lambda:ListFunctions",
-          "lambda:ListVersionsByFunction",
-          "lambda:DeleteFunction",
-          "lambda:AddPermission",
-          "lambda:RemovePermission",
-          "lambda:InvokeFunction",
-          "lambda:GetPolicy",
-          "lambda:CreateEventSourceMapping",
-          "lambda:DeleteEventSourceMapping",
-          "lambda:GetEventSourceMapping",
-          "lambda:ListEventSourceMappings",
-          "lambda:UpdateEventSourceMapping",
-          "lambda:PublishLayerVersion",
-          "lambda:GetLayerVersion",
-          "lambda:DeleteLayerVersion",
-          "lambda:ListLayerVersions",
-          "lambda:ListTags",
-          "lambda:TagResource",
-        ]
+        Sid      = "Lambda"
+        Effect   = "Allow"
+        Action   = "lambda:*"
         Resource = "*"
       },
       {
@@ -69,13 +50,13 @@ resource "aws_iam_policy" "ci" {
       {
         Sid      = "APIGateway"
         Effect   = "Allow"
-        Action   = ["apigateway:GET", "apigateway:POST", "apigateway:PUT", "apigateway:DELETE", "apigateway:PATCH"]
+        Action   = "apigateway:*"
         Resource = "arn:aws:apigateway:${data.aws_region.current.name}::*"
       },
       {
         Sid    = "S3"
         Effect = "Allow"
-        Action = ["s3:GetObject", "s3:PutObject", "s3:ListBucket", "s3:GetBucket*", "s3:GetEncryptionConfiguration", "s3:GetAccelerateConfiguration", "s3:GetLifecycleConfiguration", "s3:GetReplicationConfiguration"]
+        Action = "s3:*"
         Resource = [
           aws_s3_bucket.data_lake.arn,
           "${aws_s3_bucket.data_lake.arn}/*",
@@ -84,9 +65,9 @@ resource "aws_iam_policy" "ci" {
         ]
       },
       {
-        Sid    = "SSM"
-        Effect = "Allow"
-        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter", "ssm:AddTagsToResource"]
+        Sid      = "SSM"
+        Effect   = "Allow"
+        Action   = "ssm:*"
         Resource = "arn:aws:ssm:${data.aws_region.current.name}:${local.account_id}:parameter/ironlog/*"
       },
       {
@@ -104,7 +85,7 @@ resource "aws_iam_policy" "ci" {
       {
         Sid      = "SNS"
         Effect   = "Allow"
-        Action   = ["sns:GetTopicAttributes", "sns:ListSubscriptionsByTopic", "sns:GetSubscriptionAttributes", "sns:ListTagsForResource"]
+        Action   = "sns:*"
         Resource = aws_sns_topic.alerts.arn
       },
       {
@@ -116,19 +97,19 @@ resource "aws_iam_policy" "ci" {
       {
         Sid      = "CloudWatch"
         Effect   = "Allow"
-        Action   = ["logs:CreateLogGroup", "logs:DescribeLogGroups", "logs:PutRetentionPolicy", "cloudwatch:DescribeAlarms", "cloudwatch:PutMetricAlarm", "cloudwatch:DeleteAlarms", "cloudwatch:ListTagsForResource"]
+        Action   = ["logs:*", "cloudwatch:*"]
         Resource = "*"
       },
       {
         Sid      = "AthenaGlue"
         Effect   = "Allow"
-        Action   = ["athena:GetWorkGroup", "athena:CreateWorkGroup", "athena:UpdateWorkGroup", "athena:DeleteWorkGroup", "athena:ListTagsForResource", "glue:GetDatabase", "glue:CreateDatabase", "glue:UpdateDatabase", "glue:DeleteDatabase", "glue:GetTable", "glue:CreateTable", "glue:UpdateTable", "glue:DeleteTable", "glue:GetTables", "glue:BatchCreatePartition", "glue:GetPartitions", "glue:GetTags"]
+        Action   = ["athena:*", "glue:*"]
         Resource = "*"
       },
       {
         Sid      = "EventBridge"
         Effect   = "Allow"
-        Action   = ["events:DescribeRule", "events:PutRule", "events:DeleteRule", "events:PutTargets", "events:RemoveTargets", "events:ListTargetsByRule", "events:ListTagsForResource"]
+        Action   = "events:*"
         Resource = "arn:aws:events:${data.aws_region.current.name}:${local.account_id}:rule/${local.project}-*"
       },
     ]
