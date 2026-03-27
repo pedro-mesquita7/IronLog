@@ -218,6 +218,72 @@ def test_can_start_session_after_completing_previous(auth_header):
     assert resp["statusCode"] == 201
 
 
+def test_delete_session_soft_delete(auth_header):
+    """Deleting a session should soft-delete it (status = 'deleted')."""
+    session_id, _, _ = _start_session(auth_header)
+    # Complete it first
+    handler(
+        _event(method="PUT", resource="/api/sessions/{id}/complete", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    # Delete it
+    resp = handler(
+        _event(method="DELETE", resource="/api/sessions/{id}", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    assert resp["statusCode"] == 200
+
+    # Verify it's now deleted
+    resp = handler(
+        _event(method="GET", resource="/api/sessions/{id}", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    body = json.loads(resp["body"])["session"]
+    assert body["status"] == "deleted"
+
+
+def test_deleted_session_excluded_from_list(auth_header):
+    """Deleted sessions should not appear in the list."""
+    session_id, plan_id, _ = _start_session(auth_header)
+    # Complete it
+    handler(
+        _event(method="PUT", resource="/api/sessions/{id}/complete", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    # Delete it
+    handler(
+        _event(method="DELETE", resource="/api/sessions/{id}", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    # List should be empty
+    resp = handler(_event(headers=auth_header), None)
+    assert len(json.loads(resp["body"])["sessions"]) == 0
+
+
+def test_can_start_session_after_deleting_in_progress(auth_header):
+    """Deleting an in-progress session should allow starting a new one."""
+    session_id, plan_id, _ = _start_session(auth_header)
+    # Delete the in-progress session
+    handler(
+        _event(method="DELETE", resource="/api/sessions/{id}", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    # Now start another — should succeed
+    resp = handler(
+        _event(method="POST", headers=auth_header, body={"plan_id": plan_id, "plan_day_number": 1}),
+        None,
+    )
+    assert resp["statusCode"] == 201
+
+
+def test_delete_nonexistent_session(auth_header):
+    resp = handler(
+        _event(method="DELETE", resource="/api/sessions/{id}", headers=auth_header, path_params={"id": "nope"}),
+        None,
+    )
+    assert resp["statusCode"] == 404
+
+
 def test_sessions_requires_auth():
     resp = handler(_event(headers={}), None)
     assert resp["statusCode"] == 401

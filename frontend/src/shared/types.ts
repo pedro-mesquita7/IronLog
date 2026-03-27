@@ -80,8 +80,23 @@ export interface SessionExercise {
     warmup_75?: { weight_kg: number; reps: string };
   } | null;
   last_working_weight_kg: number | null;
+  suggested_weight_kg: number | null;
+  suggested_reps: string | null;
   machine_settings: Record<string, unknown> | null;
   replacement_exercise_ids?: string[];
+}
+
+export interface ExerciseHistoryEntry {
+  set_id: string;
+  session_id: string;
+  weight_kg: number;
+  reps: number;
+  rir: number;
+  set_type: string;
+  is_weight_pr: boolean;
+  is_e1rm_pr: boolean;
+  estimated_1rm: number;
+  timestamp: string;
 }
 
 export interface WorkoutSet {

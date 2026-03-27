@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { apiFetch } from '../../shared/api';
 import { useTimer } from '../../context/TimerContext';
-import type { SessionExercise, WorkoutSet, Equipment, Exercise } from '../../shared/types';
+import type { SessionExercise, WorkoutSet, Equipment, Exercise, SessionExerciseNote, ExerciseHistoryEntry } from '../../shared/types';
 import { PRCelebration } from '../../components/PRCelebration';
 import { PlateCalculatorModal } from '../../components/PlateCalculator';
 import { SetRow } from './SetRow';
@@ -20,11 +20,13 @@ interface Props {
   onSetDeleted: (id: string) => void;
   onSwap: (newExerciseId: string) => void;
   originalExerciseId: string;
+  sessionNote: string | null;
+  onNoteAdded: (note: SessionExerciseNote) => void;
 }
 
 interface PlannedRow {
   order: number;
-  type: 'warmup_50' | 'warmup_75' | 'working' | 'backoff';
+  type: 'working' | 'backoff';
   hintKg: number | null;
   hintReps: string;
   logged: WorkoutSet | null;
@@ -33,55 +35,35 @@ interface PlannedRow {
 export function ExercisePanel({
   sessionId, exercise, sets, equipment, allExercises, isCompleted,
   onSetAdded, onSetUpdated, onSetDeleted, onSwap, originalExerciseId,
+  sessionNote, onNoteAdded,
 }: Props) {
   const { startTimer } = useTimer();
   const [saving, setSaving] = useState(false);
   const [prData, setPrData] = useState<{ isWeightPR: boolean; isE1rmPR: boolean; weightKg: number; estimated1rm: number } | null>(null);
   const [showPlateCalc, setShowPlateCalc] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<ExerciseHistoryEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [plateCalcWeight, setPlateCalcWeight] = useState(0);
+  const [showNoteInput, setShowNoteInput] = useState(false);
+  const [noteText, setNoteText] = useState(sessionNote || '');
 
   const barFromAll = allExercises.find((e) => e.exercise_id === exercise.exercise_id);
   const defaultBar = equipment.find((e) => e.equipment_id === barFromAll?.default_bar_id);
 
-  const lastWeight = exercise.last_working_weight_kg ?? 0;
+  const suggestedKg = exercise.suggested_weight_kg ?? exercise.last_working_weight_kg ?? 0;
 
-  // Build the planned rows: warmups (if history exists) + working sets from plan
+  // Build planned rows: only working/backoff sets (no warmups)
   const plannedRows: PlannedRow[] = useMemo(() => {
     const rows: PlannedRow[] = [];
-    let order = 1;
-
-    // Warmup rows (only if we have last working weight)
-    if (exercise.warmup) {
-      if (exercise.warmup.warmup_50) {
-        rows.push({
-          order: order++,
-          type: 'warmup_50',
-          hintKg: exercise.warmup.warmup_50.weight_kg,
-          hintReps: exercise.warmup.warmup_50.reps,
-          logged: null,
-        });
-      }
-      if (exercise.warmup.warmup_75) {
-        rows.push({
-          order: order++,
-          type: 'warmup_75',
-          hintKg: exercise.warmup.warmup_75.weight_kg,
-          hintReps: exercise.warmup.warmup_75.reps,
-          logged: null,
-        });
-      }
-    }
-
-    // Working/backoff sets from plan target
+    // Warmup rows are now shown as hints above, not in the table
     for (let i = 0; i < exercise.target_sets; i++) {
-      // First set is working (top set), remaining could be backoff if target_sets > 1
-      // But spec says set_type comes from plan, so use the plan's set_type for all
       rows.push({
-        order: order++,
+        order: i + 1,
         type: exercise.set_type as PlannedRow['type'],
-        hintKg: lastWeight || null,
-        hintReps: exercise.target_reps,
+        hintKg: suggestedKg || null,
+        hintReps: exercise.suggested_reps || exercise.target_reps,
         logged: null,
       });
     }
@@ -96,7 +78,7 @@ export function ExercisePanel({
     }
 
     return rows;
-  }, [exercise, sets, lastWeight]);
+  }, [exercise, sets, suggestedKg]);
 
   // Extra logged sets beyond planned rows
   const extraSets = sets.filter(
@@ -146,10 +128,34 @@ export function ExercisePanel({
     }
   }, [exercise, sessionId, originalExerciseId, onSetAdded, startTimer]);
 
-  const replacements = exercise.replacement_exercise_ids || barFromAll?.replacement_exercise_ids || [];
+  const handleLoadHistory = async () => {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    setHistoryLoading(true);
+    try {
+      const res = await apiFetch<{ history: ExerciseHistoryEntry[] }>(`/exercises/${exercise.exercise_id}/history`);
+      setHistory(res.history);
+      setShowHistory(true);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
-  const typeLabel = (t: string) =>
-    t === 'warmup_50' ? 'W50%' : t === 'warmup_75' ? 'W75%' : t === 'backoff' ? 'Back' : 'Work';
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) return;
+    try {
+      const res = await apiFetch<{ note: SessionExerciseNote }>(`/sessions/${sessionId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ exercise_id: exercise.exercise_id, note_text: noteText.trim() }),
+      });
+      onNoteAdded(res.note);
+      setShowNoteInput(false);
+    } catch { /* ignore */ }
+  };
+
+  const replacements = exercise.replacement_exercise_ids || barFromAll?.replacement_exercise_ids || [];
 
   return (
     <div className={styles.panel}>
@@ -162,18 +168,48 @@ export function ExercisePanel({
         </div>
       </div>
 
-      {/* Notes */}
+      {/* Exercise-level notes (permanent) */}
       {exercise.notes && <p className={styles.notes}>{exercise.notes}</p>}
+
+      {/* Session-specific note */}
+      {sessionNote && !showNoteInput && (
+        <p className={styles.sessionNote} onClick={() => !isCompleted && setShowNoteInput(true)}>
+          {sessionNote}
+        </p>
+      )}
 
       {/* Actions row */}
       <div className={styles.actions}>
         {exercise.has_plate_calculator && defaultBar && (
-          <button onClick={() => { setPlateCalcWeight(lastWeight); setShowPlateCalc(true); }} className={styles.actionBtn}>Plates</button>
+          <button onClick={() => { setPlateCalcWeight(suggestedKg); setShowPlateCalc(true); }} className={styles.actionBtn}>Plates</button>
         )}
         {replacements.length > 0 && !isCompleted && (
           <button onClick={() => setShowSwap(!showSwap)} className={styles.actionBtn}>Swap</button>
         )}
+        <button onClick={handleLoadHistory} className={styles.actionBtn} disabled={historyLoading}>
+          {historyLoading ? '...' : 'History'}
+        </button>
+        {!isCompleted && !showNoteInput && (
+          <button onClick={() => setShowNoteInput(true)} className={styles.actionBtn}>Note</button>
+        )}
       </div>
+
+      {/* Note input */}
+      {showNoteInput && !isCompleted && (
+        <div className={styles.noteInput}>
+          <textarea
+            className={styles.noteTextarea}
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            placeholder="Session note for this exercise..."
+            rows={2}
+          />
+          <div className={styles.noteActions}>
+            <button onClick={handleSaveNote} className={styles.noteSave} disabled={!noteText.trim()}>Save</button>
+            <button onClick={() => setShowNoteInput(false)} className={styles.noteCancel}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* Swap dropdown */}
       {showSwap && (
@@ -189,12 +225,39 @@ export function ExercisePanel({
         </div>
       )}
 
-      {/* Sets table with planned rows */}
+      {/* Exercise history modal */}
+      {showHistory && (
+        <div className={styles.historyPanel}>
+          <div className={styles.historyHeader}>
+            <span>Recent History</span>
+            <button onClick={() => setShowHistory(false)} className={styles.historyClose}>x</button>
+          </div>
+          {history.length === 0 && <p className={styles.historyEmpty}>No history yet</p>}
+          {history.map((h) => (
+            <div key={h.set_id} className={`${styles.historyRow} ${h.is_weight_pr || h.is_e1rm_pr ? styles.historyPr : ''}`}>
+              <span className={styles.historyDate}>{new Date(h.timestamp).toLocaleDateString()}</span>
+              <span>{h.weight_kg}kg</span>
+              <span>{h.reps} reps</span>
+              <span>RIR {h.rir}</span>
+              {(h.is_weight_pr || h.is_e1rm_pr) && <span className={styles.historyPrBadge}>PR</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Warmup hint */}
+      {exercise.warmup && (
+        <p className={styles.warmupHint}>
+          Warmup: 50% @ {exercise.warmup.warmup_50?.weight_kg}kg &times; {exercise.warmup.warmup_50?.reps}
+          {exercise.warmup.warmup_75 && <> &rarr; 75% @ {exercise.warmup.warmup_75.weight_kg}kg &times; {exercise.warmup.warmup_75.reps}</>}
+        </p>
+      )}
+
+      {/* Sets table */}
       <div className={styles.setsTable}>
         <div className={styles.setsHeader}>
           <span>#</span>
-          <span>Type</span>
-          <span>kg</span>
+          <span>KG</span>
           <span>Reps</span>
           <span>RIR</span>
           <span></span>
@@ -214,14 +277,12 @@ export function ExercisePanel({
             <PlannedSetRow
               key={`planned-${row.order}`}
               row={row}
-              typeLabel={typeLabel(row.type)}
               disabled={isCompleted || saving}
               onLog={(kg, reps, rir) => handleLogSet(row.order, row.type, kg, reps, rir)}
             />
           )
         )}
 
-        {/* Any extra sets logged beyond the plan */}
         {extraSets.map((s) => (
           <SetRow
             key={s.set_id}
@@ -238,7 +299,7 @@ export function ExercisePanel({
       {!isCompleted && (
         <AddExtraSetRow
           disabled={saving}
-          defaultWeight={lastWeight}
+          defaultWeight={suggestedKg}
           onLog={(type, kg, reps, rir) =>
             handleLogSet(sets.length + 1, type, kg, reps, rir)
           }
@@ -271,51 +332,82 @@ export function ExercisePanel({
 }
 
 
-/* --- Planned set row: shows hint, lets user fill in and log --- */
+/* --- Planned set row: auto-saves on reps entry --- */
 
-function PlannedSetRow({ row, typeLabel, disabled, onLog }: {
+function PlannedSetRow({ row, disabled, onLog }: {
   row: PlannedRow;
-  typeLabel: string;
   disabled: boolean;
   onLog: (kg: number, reps: number, rir: number) => void;
 }) {
   const [kg, setKg] = useState(row.hintKg ? String(row.hintKg) : '');
   const [reps, setReps] = useState('');
   const [rir, setRir] = useState('2');
+  const [saved, setSaved] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Auto-save when reps is entered (debounced 500ms)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const repsNum = parseInt(reps);
+    if (!reps || isNaN(repsNum) || repsNum <= 0 || disabled || saved) return;
+
+    debounceRef.current = setTimeout(() => {
+      const weightKg = parseFloat(kg) || row.hintKg || 0;
+      const rirNum = parseInt(rir) || 0;
+      setSaved(true);
+      onLog(weightKg, repsNum, rirNum);
+    }, 500);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [reps, kg, rir, disabled, saved, row.hintKg, onLog]);
+
+  const stripNonNumeric = (value: string, allowDot: boolean) => {
+    return allowDot ? value.replace(/[^0-9.]/g, '') : value.replace(/[^0-9]/g, '');
+  };
+
+  if (saved) {
+    return (
+      <div className={styles.plannedRow}>
+        <span className={styles.plannedNum}>{row.order}</span>
+        <span className={styles.savedValue}>{parseFloat(kg) || row.hintKg || 0}</span>
+        <span className={styles.savedValue}>{reps}</span>
+        <span className={styles.savedValue}>{rir || '0'}</span>
+        <span className={styles.savedCheck}>&#10003;</span>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.plannedRow}>
       <span className={styles.plannedNum}>{row.order}</span>
-      <span className={styles.plannedType}>{typeLabel}</span>
       <input
-        type="number"
-        step="0.5"
+        type="text"
+        inputMode="decimal"
+        pattern="[0-9.]*"
         className={styles.plannedInput}
         value={kg}
-        onChange={(e) => setKg(e.target.value)}
+        onChange={(e) => setKg(stripNonNumeric(e.target.value, true))}
         placeholder={row.hintKg ? String(row.hintKg) : 'kg'}
       />
       <input
-        type="number"
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         className={styles.plannedInput}
         value={reps}
-        onChange={(e) => setReps(e.target.value)}
+        onChange={(e) => setReps(stripNonNumeric(e.target.value, false))}
         placeholder={row.hintReps}
       />
       <input
-        type="number"
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         className={styles.plannedInput}
         value={rir}
-        onChange={(e) => setRir(e.target.value)}
+        onChange={(e) => setRir(stripNonNumeric(e.target.value, false))}
         placeholder="2"
       />
-      <button
-        className={styles.logBtn}
-        disabled={disabled || !reps}
-        onClick={() => onLog(parseFloat(kg) || row.hintKg || 0, parseInt(reps), parseInt(rir) || 0)}
-      >
-        Log
-      </button>
+      <span></span>
     </div>
   );
 }
@@ -334,6 +426,10 @@ function AddExtraSetRow({ disabled, defaultWeight, onLog }: {
   const [reps, setReps] = useState('');
   const [rir, setRir] = useState('2');
 
+  const stripNonNumeric = (value: string, allowDot: boolean) => {
+    return allowDot ? value.replace(/[^0-9.]/g, '') : value.replace(/[^0-9]/g, '');
+  };
+
   if (!open) {
     return (
       <button className={styles.addExtraBtn} onClick={() => setOpen(true)}>
@@ -350,9 +446,9 @@ function AddExtraSetRow({ disabled, defaultWeight, onLog }: {
         <option value="warmup_50">W50%</option>
         <option value="warmup_75">W75%</option>
       </select>
-      <input type="number" step="0.5" value={kg} onChange={(e) => setKg(e.target.value)} placeholder="kg" className={styles.formInput} />
-      <input type="number" value={reps} onChange={(e) => setReps(e.target.value)} placeholder="reps" className={styles.formInput} />
-      <input type="number" value={rir} onChange={(e) => setRir(e.target.value)} placeholder="rir" className={styles.formInput} />
+      <input type="text" inputMode="decimal" pattern="[0-9.]*" value={kg} onChange={(e) => setKg(stripNonNumeric(e.target.value, true))} placeholder="kg" className={styles.formInput} />
+      <input type="text" inputMode="numeric" pattern="[0-9]*" value={reps} onChange={(e) => setReps(stripNonNumeric(e.target.value, false))} placeholder="reps" className={styles.formInput} />
+      <input type="text" inputMode="numeric" pattern="[0-9]*" value={rir} onChange={(e) => setRir(stripNonNumeric(e.target.value, false))} placeholder="rir" className={styles.formInput} />
       <button
         className={styles.addBtn}
         disabled={disabled || !reps}

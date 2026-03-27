@@ -11,13 +11,15 @@ interface Props {
   onDeleted: (id: string) => void;
 }
 
+const stripNonNumeric = (value: string, allowDot: boolean) => {
+  return allowDot ? value.replace(/[^0-9.]/g, '') : value.replace(/[^0-9]/g, '');
+};
+
 export function SetRow({ set, sessionId, isCompleted, onUpdated, onDeleted }: Props) {
   const [editing, setEditing] = useState(false);
   const [weightKg, setWeightKg] = useState(String(set.weight_kg));
   const [reps, setReps] = useState(String(set.reps));
   const [rir, setRir] = useState(String(set.rir));
-
-  const typeLabel = set.set_type === 'warmup_50' ? 'W50' : set.set_type === 'warmup_75' ? 'W75' : set.set_type === 'backoff' ? 'Back' : 'Work';
 
   const handleSave = async () => {
     const res = await apiFetch<{ set: WorkoutSet }>(`/sessions/${sessionId}/sets/${set.set_id}`, {
@@ -41,10 +43,9 @@ export function SetRow({ set, sessionId, isCompleted, onUpdated, onDeleted }: Pr
     return (
       <div className={styles.row}>
         <span className={styles.num}>{set.set_order}</span>
-        <span className={styles.type}>{typeLabel}</span>
-        <input className={styles.editInput} value={weightKg} onChange={(e) => setWeightKg(e.target.value)} type="number" step="0.5" />
-        <input className={styles.editInput} value={reps} onChange={(e) => setReps(e.target.value)} type="number" />
-        <input className={styles.editInput} value={rir} onChange={(e) => setRir(e.target.value)} type="number" />
+        <input className={styles.editInput} value={weightKg} onChange={(e) => setWeightKg(stripNonNumeric(e.target.value, true))} type="text" inputMode="decimal" pattern="[0-9.]*" />
+        <input className={styles.editInput} value={reps} onChange={(e) => setReps(stripNonNumeric(e.target.value, false))} type="text" inputMode="numeric" pattern="[0-9]*" />
+        <input className={styles.editInput} value={rir} onChange={(e) => setRir(stripNonNumeric(e.target.value, false))} type="text" inputMode="numeric" pattern="[0-9]*" />
         <div className={styles.editActions}>
           <button onClick={handleSave} className={styles.saveBtn}>ok</button>
           <button onClick={() => setEditing(false)} className={styles.cancelBtn}>x</button>
@@ -56,7 +57,6 @@ export function SetRow({ set, sessionId, isCompleted, onUpdated, onDeleted }: Pr
   return (
     <div className={`${styles.row} ${set.is_weight_pr || set.is_e1rm_pr ? styles.prRow : ''}`} onClick={() => !isCompleted && setEditing(true)}>
       <span className={styles.num}>{set.set_order}</span>
-      <span className={styles.type}>{typeLabel}</span>
       <span className={styles.weight}>{set.weight_kg}</span>
       <span className={styles.reps}>{set.reps}</span>
       <span className={styles.rir}>{set.rir}</span>

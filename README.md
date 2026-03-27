@@ -8,11 +8,9 @@ A mobile-first PWA for tracking gym sessions, integrating WHOOP recovery data, a
 
 **Live**: [pedro-mesquita7.github.io/IronLog](https://pedro-mesquita7.github.io/IronLog)
 
-![IronLog App](docs/screenshot.png)
-
 ## Architecture
 
-<details>
+<details open>
 <summary>System architecture diagram</summary>
 
 ```mermaid
@@ -77,6 +75,8 @@ Bronze: raw CDC events + WHOOP data (append-only). Silver: deduplicated staging.
 
 Full lineage: [docs/data-lineage.md](docs/data-lineage.md)
 
+![IronLog App](docs/screenshot.png)
+
 ## API Endpoints
 
 | Method | Endpoint | Description |
@@ -90,7 +90,9 @@ Full lineage: [docs/data-lineage.md](docs/data-lineage.md)
 | GET | `/api/sessions` | List sessions (?from=&to=) |
 | GET | `/api/sessions/{id}` | Get session with sets + notes |
 | PUT | `/api/sessions/{id}/complete` | Complete session (immutable) |
+| DELETE | `/api/sessions/{id}` | Soft-delete session |
 | POST | `/api/sessions/{id}/sets` | Log set (dual PR detection) |
+| GET | `/api/exercises/{id}/history` | Exercise set history |
 | POST | `/api/corrections` | Correct a set post-completion |
 | GET | `/api/analytics/progression` | Exercise progression (?exercise_id=) |
 | GET | `/api/analytics/recovery-correlation` | Recovery vs performance |

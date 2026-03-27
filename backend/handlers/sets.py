@@ -19,6 +19,14 @@ def _epley_e1rm(weight, reps):
     return result.quantize(Decimal("0.01"))
 
 
+def _is_session_deleted(table, session_id):
+    """Check if a session has been soft-deleted."""
+    if not session_id:
+        return False
+    meta = table.get_item(Key={"PK": f"SESSION#{session_id}", "SK": "META"}).get("Item")
+    return meta is not None and meta.get("status") == "deleted"
+
+
 def _detect_prs(table, exercise_id, weight_kg, reps, set_type):
     """Detect weight PR and e1RM PR for working/backoff sets.
     Returns (is_weight_pr, is_e1rm_pr, estimated_1rm).
@@ -37,12 +45,23 @@ def _detect_prs(table, exercise_id, weight_kg, reps, set_type):
     )
     history = resp.get("Items", [])
 
+    # Cache session deletion status to avoid repeated lookups
+    deleted_sessions = {}
+
     max_weight = Decimal("0")
     max_e1rm = Decimal("0")
 
     for s in history:
         if s.get("set_type") not in ("working", "backoff"):
             continue
+        # Skip sets from deleted sessions
+        sid = s.get("session_id")
+        if sid:
+            if sid not in deleted_sessions:
+                deleted_sessions[sid] = _is_session_deleted(table, sid)
+            if deleted_sessions[sid]:
+                continue
+
         w = s.get("weight_kg", Decimal("0"))
         if isinstance(w, (int, float)):
             w = Decimal(str(w))
@@ -78,6 +97,8 @@ def handler(event, context):
         return _update_set(event)
     if resource == "/api/sessions/{id}/sets/{sid}" and method == "DELETE":
         return _delete_set(event)
+    if resource == "/api/exercises/{id}/history" and method == "GET":
+        return _get_exercise_history(event)
 
     return api_response(405, {"error": "Method not allowed"})
 
@@ -246,3 +267,44 @@ def _delete_set(event):
 
     table.delete_item(Key={"PK": target["PK"], "SK": target["SK"]})
     return api_response(200, {"message": "Set deleted"})
+
+
+def _get_exercise_history(event):
+    """Return recent working/backoff sets for an exercise, excluding deleted sessions."""
+    exercise_id = event["pathParameters"]["id"]
+    table = get_table()
+
+    resp = table.query(
+        IndexName=GSI1_INDEX,
+        KeyConditionExpression=Key("GSI1PK").eq(f"SETS#EX#{exercise_id}"),
+        ScanIndexForward=False,
+        Limit=50,
+    )
+
+    deleted_sessions = {}
+    history = []
+    for item in resp.get("Items", []):
+        if item.get("set_type") not in ("working", "backoff"):
+            continue
+        sid = item.get("session_id")
+        if sid:
+            if sid not in deleted_sessions:
+                deleted_sessions[sid] = _is_session_deleted(table, sid)
+            if deleted_sessions[sid]:
+                continue
+        history.append({
+            "set_id": item.get("set_id"),
+            "session_id": sid,
+            "weight_kg": item.get("weight_kg"),
+            "reps": item.get("reps"),
+            "rir": item.get("rir"),
+            "set_type": item.get("set_type"),
+            "is_weight_pr": item.get("is_weight_pr", False),
+            "is_e1rm_pr": item.get("is_e1rm_pr", False),
+            "estimated_1rm": item.get("estimated_1rm"),
+            "timestamp": item.get("timestamp"),
+        })
+        if len(history) >= 20:
+            break
+
+    return api_response(200, {"history": history})
