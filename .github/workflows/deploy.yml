@@ -13,9 +13,21 @@ jobs:
       AWS_DEFAULT_REGION: eu-west-3
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # Build Lambda layer before Terraform needs it
+      - name: Build Lambda dependency layer
+        run: |
+          mkdir -p build/layer/python
+          pip install PyJWT -t build/layer/python --upgrade --no-deps --quiet
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.7'
+
       - run: cd infra && terraform init -input=false
       - run: cd infra && terraform apply -auto-approve -input=false -var="alert_phone=${{ secrets.ALERT_PHONE }}"
 

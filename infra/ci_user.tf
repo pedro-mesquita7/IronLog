@@ -80,10 +80,16 @@ resource "aws_iam_policy" "ci" {
         ]
       },
       {
-        Sid      = "SSM"
-        Effect   = "Allow"
-        Action   = ["ssm:GetParameter", "ssm:GetParameters", "ssm:DescribeParameters", "ssm:PutParameter"]
+        Sid    = "SSM"
+        Effect = "Allow"
+        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter"]
         Resource = "arn:aws:ssm:${data.aws_region.current.name}:${local.account_id}:parameter/ironlog/*"
+      },
+      {
+        Sid      = "SSMDescribe"
+        Effect   = "Allow"
+        Action   = ["ssm:DescribeParameters"]
+        Resource = "*"
       },
       {
         Sid      = "DynamoDB"
@@ -94,7 +100,7 @@ resource "aws_iam_policy" "ci" {
       {
         Sid      = "SNS"
         Effect   = "Allow"
-        Action   = ["sns:GetTopicAttributes", "sns:ListSubscriptionsByTopic", "sns:GetSubscriptionAttributes"]
+        Action   = ["sns:GetTopicAttributes", "sns:ListSubscriptionsByTopic", "sns:GetSubscriptionAttributes", "sns:ListTagsForResource"]
         Resource = aws_sns_topic.alerts.arn
       },
       {
@@ -112,7 +118,7 @@ resource "aws_iam_policy" "ci" {
       {
         Sid      = "AthenaGlue"
         Effect   = "Allow"
-        Action   = ["athena:GetWorkGroup", "athena:CreateWorkGroup", "athena:UpdateWorkGroup", "athena:DeleteWorkGroup", "athena:ListTagsForResource", "glue:GetDatabase", "glue:CreateDatabase", "glue:UpdateDatabase", "glue:DeleteDatabase", "glue:GetTable", "glue:CreateTable", "glue:UpdateTable", "glue:DeleteTable", "glue:GetTables", "glue:BatchCreatePartition", "glue:GetPartitions"]
+        Action   = ["athena:GetWorkGroup", "athena:CreateWorkGroup", "athena:UpdateWorkGroup", "athena:DeleteWorkGroup", "athena:ListTagsForResource", "glue:GetDatabase", "glue:CreateDatabase", "glue:UpdateDatabase", "glue:DeleteDatabase", "glue:GetTable", "glue:CreateTable", "glue:UpdateTable", "glue:DeleteTable", "glue:GetTables", "glue:BatchCreatePartition", "glue:GetPartitions", "glue:GetTags"]
         Resource = "*"
       },
       {
