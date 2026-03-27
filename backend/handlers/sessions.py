@@ -47,6 +47,20 @@ def _start_session(event):
 
     table = get_table()
 
+    # Check for existing in_progress session
+    recent = table.query(
+        IndexName=GSI1_INDEX,
+        KeyConditionExpression=Key("GSI1PK").eq("SESSIONS"),
+        ScanIndexForward=False,
+        Limit=10,
+    )
+    for s in recent.get("Items", []):
+        if s.get("status") == "in_progress":
+            return api_response(409, {
+                "error": "You already have a session in progress. Complete or delete it first.",
+                "existing_session_id": s["session_id"],
+            })
+
     # Get plan day
     day_sk = f"DAY#{int(plan_day_number):02d}"
     day_resp = table.get_item(Key={"PK": f"PLAN#{plan_id}", "SK": day_sk}).get("Item")

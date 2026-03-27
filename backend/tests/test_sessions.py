@@ -188,6 +188,36 @@ def test_session_exercise_notes(auth_header):
     assert notes[0]["note_text"] == "Go heavier next time"
 
 
+def test_cannot_start_session_while_one_in_progress(auth_header):
+    """Starting a new session should fail if one is already in_progress."""
+    session_id, plan_id, _ = _start_session(auth_header)
+    # Try starting another session — should get 409
+    resp = handler(
+        _event(method="POST", headers=auth_header, body={"plan_id": plan_id, "plan_day_number": 1}),
+        None,
+    )
+    assert resp["statusCode"] == 409
+    body = json.loads(resp["body"])
+    assert "already have a session in progress" in body["error"]
+    assert body["existing_session_id"] == session_id
+
+
+def test_can_start_session_after_completing_previous(auth_header):
+    """After completing a session, starting a new one should work."""
+    session_id, plan_id, _ = _start_session(auth_header)
+    # Complete it
+    handler(
+        _event(method="PUT", resource="/api/sessions/{id}/complete", headers=auth_header, path_params={"id": session_id}),
+        None,
+    )
+    # Now start another — should succeed
+    resp = handler(
+        _event(method="POST", headers=auth_header, body={"plan_id": plan_id, "plan_day_number": 1}),
+        None,
+    )
+    assert resp["statusCode"] == 201
+
+
 def test_sessions_requires_auth():
     resp = handler(_event(headers={}), None)
     assert resp["statusCode"] == 401

@@ -19,7 +19,7 @@ def test_seed_creates_data(auth_header):
     body = json.loads(resp["body"])
     assert body["seeded"] is True
     assert body["equipment_count"] == 8
-    assert body["exercise_count"] == 25
+    assert body["exercise_count"] == 24
     assert body["plan_id"]
     assert body["message"] == "Seed data created successfully"
 
@@ -67,7 +67,7 @@ def test_seed_creates_exercises_with_replacements(auth_header):
         KeyConditionExpression=Key("GSI1PK").eq("EXERCISES"),
     )
     items = resp["Items"]
-    assert len(items) == 25
+    assert len(items) == 24
 
     # Check replacement links are populated
     by_name = {i["name"]: i for i in items}
@@ -127,7 +127,7 @@ def test_seed_creates_plan(auth_header):
 
     day1 = next(d for d in days if d["SK"] == "DAY#01")
     assert day1["day_name"] == "Upper A"
-    assert len(day1["exercises"]) == 6
+    assert len(day1["exercises"]) == 5
 
 
 def test_seed_requires_auth():

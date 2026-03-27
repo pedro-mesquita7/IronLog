@@ -39,7 +39,7 @@ def validate_login_token(token):
 
 def generate_jwt(secret):
     now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(hours=24)
+    expires_at = now + timedelta(days=30)
     payload = {"exp": expires_at, "iat": now}
     token = jwt.encode(payload, secret, algorithm="HS256")
     return token, expires_at.isoformat()
