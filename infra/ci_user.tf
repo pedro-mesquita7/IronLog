@@ -17,6 +17,7 @@ resource "aws_iam_policy" "ci" {
           "lambda:UpdateFunctionConfiguration",
           "lambda:GetFunction",
           "lambda:ListFunctions",
+          "lambda:ListVersionsByFunction",
           "lambda:DeleteFunction",
           "lambda:AddPermission",
           "lambda:RemovePermission",
@@ -45,6 +46,7 @@ resource "aws_iam_policy" "ci" {
           "iam:GetRolePolicy",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
+          "iam:ListAttachedUserPolicies",
           "iam:CreatePolicy",
           "iam:CreatePolicyVersion",
           "iam:DeletePolicyVersion",
@@ -82,7 +84,7 @@ resource "aws_iam_policy" "ci" {
       {
         Sid    = "SSM"
         Effect = "Allow"
-        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter"]
+        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter", "ssm:ListTagsForResource", "ssm:AddTagsToResource"]
         Resource = "arn:aws:ssm:${data.aws_region.current.name}:${local.account_id}:parameter/ironlog/*"
       },
       {
