@@ -14,6 +14,11 @@ export function SessionStartPage() {
   useEffect(() => {
     apiFetch<{ plans: Plan[] }>('/plans')
       .then((r) => {
+        if (r.plans.length === 0) {
+          // No data at all — redirect to guided setup
+          navigate('/setup', { replace: true });
+          return;
+        }
         const active = r.plans.find((p) => p.is_active);
         if (active) {
           return apiFetch<{ plan: Plan }>(`/plans/${active.plan_id}`).then((pr) => setPlan(pr.plan));
