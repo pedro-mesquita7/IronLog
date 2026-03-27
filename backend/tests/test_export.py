@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 from handlers.export import handler
 
